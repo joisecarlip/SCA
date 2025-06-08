@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    ports:
+      - 8000:80
+    volumes:
+      - .:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - applaravel
+      - mysql
+    networks:
+      - networkapp
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: sca
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_password
+      MYSQL_ROOT_PASSWORD: db_root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdatalaravel:/var/lib/mysql
+    networks:
+      - networkapp
+
+  applaravel:
+    build: 
+      args:
+        user: laraveluser
+        uid: 1000
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: applaravel
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - networkapp
+
+networks:
+  networkapp:
+
+volumes:
+  dbdatalaravel:
